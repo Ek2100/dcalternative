@@ -8,6 +8,7 @@ different settings, so each process only ever holds the secrets it needs:
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
@@ -42,6 +43,48 @@ def _int(name: str, default: int, lo: int, hi: int) -> int:
 def _bool(name: str, default: bool = False) -> bool:
     raw = os.getenv(name, "").strip().lower()
     return default if not raw else raw in ("1", "true", "yes", "on")
+
+
+_DB_NAME_RE = re.compile(r"[A-Za-z0-9_-]{1,38}")
+
+
+def _mongo_uri(name: str) -> str:
+    uri = _req(name)
+    if not uri.startswith(("mongodb://", "mongodb+srv://")):
+        raise ConfigError(f"{name} must start with mongodb:// or mongodb+srv:// (it's the connection string)")
+    if "CHANGE_ME" in uri:
+        raise ConfigError(f"{name} still has the CHANGE_ME placeholder password from .env.example")
+    return uri
+
+
+def _db_name() -> str:
+    name = os.getenv("MONGO_DB", "verify").strip() or "verify"
+    if not _DB_NAME_RE.fullmatch(name):
+        raise ConfigError("MONGO_DB is the database *name* (e.g. verify), not the connection string. "
+                          "Put the connection string in MONGO_URI_BOT / MONGO_URI_WEB.")
+    return name
+
+
+def check_mongo(uri: str, db_name: str, label: str) -> None:
+    """Connect once at startup so a bad URI gives a clear message, not a traceback."""
+    from pymongo import MongoClient
+    from pymongo.errors import ConfigurationError, OperationFailure, PyMongoError, ServerSelectionTimeoutError
+
+    try:
+        client = MongoClient(uri, serverSelectionTimeoutMS=8000)
+        client[db_name].command("ping")
+        client.close()
+    except OperationFailure as exc:
+        if exc.code == 18:
+            raise ConfigError(f"{label}: MongoDB rejected the username/password in the connection string. "
+                              "In Atlas: Database Access → check the user and password (special characters "
+                              "in the password must be URL-encoded, e.g. @ → %40).") from None
+        raise ConfigError(f"{label}: MongoDB refused the request ({exc.code}).") from None
+    except ServerSelectionTimeoutError:
+        raise ConfigError(f"{label}: couldn't reach MongoDB. If you use Atlas: Network Access → add your "
+                          "current IP address. Otherwise check the host in the connection string.") from None
+    except (ConfigurationError, PyMongoError) as exc:
+        raise ConfigError(f"{label}: the MongoDB connection string looks wrong ({type(exc).__name__}).") from None
 
 
 def _base_url() -> str:
@@ -97,8 +140,8 @@ class WebSettings:
             raise ConfigError("JOB_PUBLIC_KEY is not a valid key")
         base = _base_url()
         return cls(
-            mongo_uri=_req("MONGO_URI_WEB"),
-            db_name=os.getenv("MONGO_DB", "verify").strip() or "verify",
+            mongo_uri=_mongo_uri("MONGO_URI_WEB"),
+            db_name=_db_name(),
             public_base_url=base,
             turnstile_site_key=_req("TURNSTILE_SITE_KEY"),
             turnstile_secret=_req("TURNSTILE_SECRET_KEY"),
@@ -141,8 +184,8 @@ class BotSettings:
         )
         return cls(
             discord_token=_req("DISCORD_TOKEN"),
-            mongo_uri=_req("MONGO_URI_BOT"),
-            db_name=os.getenv("MONGO_DB", "verify").strip() or "verify",
+            mongo_uri=_mongo_uri("MONGO_URI_BOT"),
+            db_name=_db_name(),
             keyring=keyring,
             job_private_key=private_key,
             public_base_url=_base_url(),

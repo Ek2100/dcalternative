@@ -40,7 +40,7 @@ from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from bot.service import Service, utcnow
-from core.config import BAN_DAY_CHOICES, BotSettings, ConfigError
+from core.config import BAN_DAY_CHOICES, BotSettings, ConfigError, check_mongo
 
 log = logging.getLogger("verify.bot")
 
@@ -733,6 +733,8 @@ def setup_logging() -> None:
     logging.basicConfig(level=logging.INFO, stream=sys.stdout,
                         format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     logging.getLogger("discord.http").setLevel(logging.WARNING)
+    # discord.py warns that voice libraries are missing; this bot never uses voice.
+    logging.getLogger("discord.client").addFilter(lambda r: "voice will NOT be supported" not in r.getMessage())
 
 
 def main() -> None:
@@ -740,6 +742,7 @@ def main() -> None:
     setup_logging()
     try:
         settings = BotSettings.from_env()
+        check_mongo(settings.mongo_uri, settings.db_name, "MONGO_URI_BOT")
     except ConfigError as exc:
         sys.exit(f"Config error: {exc}")
     mongo = AsyncIOMotorClient(settings.mongo_uri, tz_aware=True)

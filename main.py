@@ -21,11 +21,13 @@ PORT = int(os.getenv("WEB_PORT", "8080"))
 
 def build_web():
     """Create the page app up front, so config mistakes show before anything starts."""
-    from core.config import ConfigError, WebSettings
+    from core.config import ConfigError, WebSettings, check_mongo
     from web.app import create_app
 
     try:
-        return create_app(WebSettings.from_env())
+        settings = WebSettings.from_env()
+        check_mongo(settings.mongo_uri, settings.db_name, "MONGO_URI_WEB")
+        return create_app(settings)
     except ConfigError as exc:
         sys.exit(f"Config error (verify page): {exc}")
     except OSError as exc:
