@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Privacy{% endblock %}
+{% block content %}
+<h1>What we store, and how deletion works</h1>
+
+<h2>When you verify</h2>
+<ul>
+  <li><strong>Never stored:</strong> your IP address, location, internet provider, email or full browser
+      “user agent”. Your IP is used for a few milliseconds to check for VPNs (using a database on our own
+      server, not a third party) and by Cloudflare's captcha, then thrown away.</li>
+  <li><strong>Stored, per server:</strong> your Discord ID (encrypted), whether you're verified, and
+      codes made from browser details: screen size, time zone, languages, graphics card, fonts, how your browser draws a
+      test image and plays a test sound, a coarse browser family, and a random ID we keep in this browser.
+      The codes are keyed hashes: they can't be turned back into the details.</li>
+  <li>Each server has its <strong>own key</strong>, so the same browser gives different codes in different
+      servers. Nobody, including us, can link your accounts across servers. We will never offer a
+      “look someone up” feature.</li>
+</ul>
+
+<h2>Who sees what</h2>
+<p>If your browser matches an account <em>this server</em> banned, its moderators are told which banned account
+   you matched. You are only told that a moderator will review your verification. The bot cannot ban anyone. Moderators decide.</p>
+
+<h2>Deletion</h2>
+<ul>
+  <li><strong>You can delete your data any time</strong> with <code>/privacy</code> in Discord. Your verified
+      role is removed straight away and your record stops being used. The rest is erased within 7 days.</li>
+  <li>If a server bans the account during those 7 days, they keep a ban record. Otherwise someone could break
+      the rules, delete their data and come straight back on a new account.</li>
+  <li><strong>Ban records</strong> can't be deleted by the banned person. They're deleted after the period the
+      server chose (30–365 days, default 180), or right away if the person is unbanned.</li>
+  <li>Verified members' records are deleted 180 days after verifying, or 30 days after leaving the server.</li>
+  <li>When a server removes the bot or presses “Delete all server data”, we destroy that server's encryption key
+      first, which makes all its records unreadable, and then delete the records.</li>
+  <li>Unused verification links expire after 10 minutes.</li>
+</ul>
+{% endblock %}

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{% block title %}SyntaxHQ Verify{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<main class="card">
+{% block content %}{% endblock %}
+</main>
+<footer><a href="/privacy">Privacy</a> · SyntaxHQ</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

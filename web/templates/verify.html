@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Verify{% endblock %}
+{% block content %}
+<div id="app" data-site-key="{{ site_key }}" data-cdata="{{ cdata }}"
+     data-submit-url="{{ submit_url }}" data-status-url="{{ status_url }}">
+
+  <section id="step-consent">
+    <h1>Before you verify</h1>
+    <p>To stop banned people coming back on new accounts, this server checks whether your browser looks like
+       one used by another account <strong>in this server</strong>.</p>
+    <ul>
+      <li>We read some technical details of your browser (like screen size, graphics card and fonts) and
+          keep a random ID in this browser. We turn them into codes that can't be turned back, and keep only
+          the codes.</li>
+      <li>We check whether you're on a VPN, but <strong>we never store your IP address</strong>.</li>
+      <li>Nothing is shared with other servers. Records are deleted automatically, and you can delete yours
+          any time with <code>/privacy</code> in Discord.</li>
+      <li>A quick Cloudflare check makes sure you're human.</li>
+    </ul>
+    <div class="buttons">
+      <button id="agree" class="primary" type="button">I agree, continue</button>
+      <button id="decline" type="button">No thanks</button>
+    </div>
+    <p class="small"><a href="/privacy" target="_blank" rel="noopener">Full details</a></p>
+  </section>
+
+  <section id="step-check" hidden>
+    <h1>One moment…</h1>
+    <p>Complete the check below.</p>
+    <div id="turnstile"></div>
+  </section>
+
+  <section id="step-result" hidden>
+    <h1 id="result-title">Working…</h1>
+    <p id="result-body">Checking your browser. This takes a few seconds.</p>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='verify.js') }}" defer></script>{% endblock %}
