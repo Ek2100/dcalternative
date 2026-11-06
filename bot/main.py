@@ -503,8 +503,10 @@ async def show_privacy(interaction: discord.Interaction) -> None:
         "erased within 7 days. If a server bans this account in those 7 days, they keep a ban record, so that "
         "deleting can't be used to dodge a ban.\nBan records can't be deleted by the banned person. They "
         "expire on the server's schedule, or right away if you're unbanned."))
-    view = PrivacyView(interaction.user.id) if rows else None
-    await interaction.followup.send(embed=e, view=view, ephemeral=True)
+    if rows:
+        await interaction.followup.send(embed=e, view=PrivacyView(interaction.user.id), ephemeral=True)
+    else:
+        await interaction.followup.send(embed=e, ephemeral=True)
 
 
 class PrivacyView(discord.ui.View):
