@@ -103,13 +103,11 @@ Backups: keep them encrypted and **delete them after 7 days or less**, so deleti
    Put the `https://….trycloudflare.com` URL in `PUBLIC_BASE_URL`, and keep `PROXY_MODE=tunnel`.
 5. **Turnstile:** for a first test, use Cloudflare's always-pass test keys (they're in `.env.example`) and set `TURNSTILE_HOSTNAME=` to blank. Later, create a real widget in the Cloudflare dashboard for your hostname.
 6. **VPN database:** either set `VPN_CHECK=off` for the first test, or download the free **IP2Proxy LITE PX2** BIN from lite.ip2location.com (free account) and set `IP2PROXY_DB`.
-7. **Run both** (two terminals). Keep `SYNC_COMMANDS=1` on the first start so the slash commands register:
+7. **Run it** (from the `dcalternative` folder). This starts the bot **and** the verify page on `127.0.0.1:8080`. Keep `SYNC_COMMANDS=1` on the first start so the slash commands register.
    ```bash
-   python -m bot.main
+   python3 main.py
    ```
-   ```bash
-   gunicorn -w 2 -b 127.0.0.1:8080 "web.app:create_app()"
-   ```
+   `python3 main.py bot` or `python3 main.py web` runs just one of them. In production, run the page with gunicorn instead (`gunicorn -w 2 -b 127.0.0.1:8080 "web.app:create_app()"`).
 8. **In Discord:**
    1. The server owner gets the onboarding DM.
    2. Run `/setup`, pick the role and the mod channel, and lock channels to the verified role.
@@ -147,6 +145,7 @@ python -m pytest -q
 
 ## Layout
 ```
+main.py           start here: python3 main.py
 bot/main.py       Discord bot: events, /setup panel, DMs, buttons, mod cases
 bot/service.py    verification, matching, bans, deletion (tested without Discord)
 web/app.py        Flask verify page, Cloudflare IP handling, Turnstile, VPN check
