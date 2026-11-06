@@ -1,6 +1,6 @@
 """SyntaxHQ verification bot: the Discord side.
 
-Run with:  python -m bot.main
+Run with:  python3 main.py   (or python3 main.py bot)
 
 What it does
 ------------
@@ -22,9 +22,14 @@ and MongoDB. The web page writes sealed jobs that this process picks up.
 
 from __future__ import annotations
 
+import os
+import sys
+
+if __package__ in (None, ""):  # allow "python3 bot/main.py" as well as "python3 -m bot.main"
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import asyncio
 import logging
-import sys
 import time
 from typing import Optional
 
